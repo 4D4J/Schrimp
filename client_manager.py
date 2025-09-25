@@ -67,3 +67,21 @@ class ClientManager:
                 pseudo = self.clients[client_socket]['pseudo']
                 del self.clients[client_socket]
                 print(f"{pseudo} disconnected (network error)")
+    
+    def broadcast_encrypted_message(self, encrypted_data, exclude_client=None):
+        """Broadcast encrypted data to all connected clients"""
+        disconnected_clients = []
+        
+        for client_socket in list(self.clients.keys()):
+            if client_socket != exclude_client:
+                try:
+                    client_socket.send(encrypted_data)
+                except socket.error:
+                    disconnected_clients.append(client_socket)
+        
+        # Clean up disconnected clients
+        for client_socket in disconnected_clients:
+            if client_socket in self.clients:
+                pseudo = self.clients[client_socket]['pseudo']
+                del self.clients[client_socket]
+                print(f"{pseudo} disconnected (network error)")
