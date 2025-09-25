@@ -14,8 +14,8 @@ from datetime import datetime
 class MessageHandler:
     """Handles message processing and commands"""
     
-    def __init__(self, logger):
-        self.logger = logger
+    def __init__(self):
+        pass
     
     def process_message(self, message, pseudo, client_socket, client_manager):
         """Process incoming message and return action"""
@@ -35,7 +35,7 @@ class MessageHandler:
         # Regular message - broadcast it
         timestamp = datetime.now().strftime("%H:%M:%S")
         formatted_message = f"[{timestamp}] {pseudo}: {message}"
-        self.logger.log_and_print(formatted_message)
+        print(formatted_message)
         client_manager.broadcast_message(formatted_message, exclude_client=client_socket)
         return 'continue'
     

@@ -6,30 +6,28 @@ Core server implementation that orchestrates all components
 
 import socket
 import threading
-from logger import ChatLogger
 from client_manager import ClientManager
 from auth_handler import AuthHandler
 from message_handler import MessageHandler
 
 
 # ==============================================================================
-# MAIN CHAT SERVER
+# MAIN CHAT SERVER  
 # ==============================================================================
 
 class ChatServer:
     """Main chat server class that coordinates all components"""
     
-    def __init__(self, host='0.0.0.0', port=8888, password=None, log_file='schrimp_chat.log'):
+    def __init__(self, host='0.0.0.0', port=8888, password=None):
         self.host = host
         self.port = port
         self.server_socket = None
         self.running = False
         
         # Initialize components
-        self.logger = ChatLogger(log_file)
-        self.client_manager = ClientManager(self.logger)
+        self.client_manager = ClientManager()
         self.auth_handler = AuthHandler(password)
-        self.message_handler = MessageHandler(self.logger)
+        self.message_handler = MessageHandler()
 
     # --------------------------------------------------------------------------
     # SERVER MANAGEMENT
@@ -44,18 +42,18 @@ class ChatServer:
             self.server_socket.listen(10)
             self.running = True
             
-            self.logger.log_and_print(f"Chat server started on {self.host}:{self.port}")
+            print(f"Chat server started on {self.host}:{self.port}")
             if self.auth_handler.password:
-                self.logger.log_and_print(f"Password required: {self.auth_handler.password}")
+                print(f"Password required: {self.auth_handler.password}")
             else:
-                self.logger.log_and_print("No password required")
-            self.logger.log_and_print(f"Connection: nc {self.host} {self.port}")
-            self.logger.log_and_print("=" * 50)
+                print("No password required")
+            print(f"Connection: nc {self.host} {self.port}")
+            print("=" * 50)
             
             while self.running:
                 try:
                     client_socket, client_address = self.server_socket.accept()
-                    self.logger.log_and_print(f"New connection from {client_address[0]}:{client_address[1]}")
+                    print(f"New connection from {client_address[0]}:{client_address[1]}")
                     
                     # Create a thread for each client
                     client_thread = threading.Thread(
@@ -67,10 +65,10 @@ class ChatServer:
                     
                 except socket.error:
                     if self.running:
-                        self.logger.log_and_print("Error accepting connection", 'error')
+                        print("Error accepting connection")
                         
         except Exception as e:
-            self.logger.log_and_print(f"Server startup error: {e}", 'error')
+            print(f"Server startup error: {e}")
         finally:
             self.stop()
 
@@ -127,7 +125,7 @@ class ChatServer:
                 )
                         
         except Exception as e:
-            self.logger.log_and_print(f"Error with client {client_address}: {e}", 'error')
+            print(f"Error with client {client_address}: {e}")
         finally:
             # ------------------------------------------------------------------
             # CLEANUP ON DISCONNECTION
@@ -156,4 +154,4 @@ class ChatServer:
                 self.server_socket.close()
             except:
                 pass
-        self.logger.log_and_print("Server stopped")
+        print("Server stopped")

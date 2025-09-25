@@ -7,7 +7,7 @@ echo "Schrimp Chat - VPS deployment script"
 echo "====================================="
 
 # Default configuration
-DEFAULT_PORT=8888
+DEFAULT_PORT=3031
 DEFAULT_USER="schrimp"
 DEFAULT_DIR="/opt/schrimp-chat"
 
@@ -55,17 +55,11 @@ chown $USERNAME:$USERNAME $INSTALL_DIR
 echo "Copying files..."
 cp chat_server.py $INSTALL_DIR/
 cp server.py $INSTALL_DIR/
-cp logger.py $INSTALL_DIR/
 cp client_manager.py $INSTALL_DIR/
 cp auth_handler.py $INSTALL_DIR/
 cp message_handler.py $INSTALL_DIR/
 chown -R $USERNAME:$USERNAME $INSTALL_DIR/
 chmod +x $INSTALL_DIR/chat_server.py
-
-# Create logs directory
-echo "Creating logs directory..."
-mkdir -p $INSTALL_DIR/logs
-chown $USERNAME:$USERNAME $INSTALL_DIR/logs
 
 # Create systemd service
 echo "Configuring systemd service..."
@@ -78,7 +72,7 @@ After=network.target
 Type=simple
 User=$USERNAME
 WorkingDirectory=$INSTALL_DIR
-ExecStart=/usr/bin/python3 $INSTALL_DIR/chat_server.py $PORT${PASSWORD:+ "$PASSWORD"} $INSTALL_DIR/logs/schrimp_chat.log
+ExecStart=/usr/bin/python3 $INSTALL_DIR/chat_server.py $PORT${PASSWORD:+ "$PASSWORD"}
 Restart=always
 RestartSec=3
 
@@ -126,9 +120,7 @@ echo "  Status:    systemctl status schrimp-chat"
 echo "  Stop:      systemctl stop schrimp-chat"
 echo "  Start:     systemctl start schrimp-chat"
 echo "  Logs:      journalctl -u schrimp-chat -f"
-echo "  Chat logs: tail -f $INSTALL_DIR/logs/schrimp_chat.log"
 echo ""
 echo "Files:"
 echo "  Service:   /etc/systemd/system/schrimp-chat.service"
 echo "  Code:      $INSTALL_DIR/"
-echo "  Chat logs: $INSTALL_DIR/logs/schrimp_chat.log"

@@ -3,13 +3,12 @@
 Simple Chat Server - Schrimp
 Main entry point for the chat server application
 
-Usage: python chat_server.py [port] [password] [log_file]
+Usage: python chat_server.py [port] [password]
 Client connection: nc <server_ip> <port>
 
 Arguments:
-- port: Server port (default: 8888)
+- port: Server port (default: 3031)
 - password: Optional password for authentication
-- log_file: Log file path (default: schrimp_chat.log)
 """
 
 import sys
@@ -23,9 +22,8 @@ from server import ChatServer
 def main():
     """Main function to parse arguments and start the server"""
     # Handle command line arguments
-    port = 8888
+    port = 3031
     password = None
-    log_file = 'schrimp_chat.log'
     
     if len(sys.argv) >= 2:
         try:
@@ -36,20 +34,17 @@ def main():
     if len(sys.argv) >= 3:
         password = sys.argv[2]
     
-    if len(sys.argv) >= 4:
-        log_file = sys.argv[3]
-    
     # --------------------------------------------------------------------------
     # SERVER INITIALIZATION
     # --------------------------------------------------------------------------
     
     # Create and start server
-    server = ChatServer(port=port, password=password, log_file=log_file)
+    server = ChatServer(port=port, password=password)
     
     try:
         server.start()
     except KeyboardInterrupt:
-        server.logger.log_and_print("\nStopping server...")
+        print("\nStopping server...")
         server.stop()
 
 

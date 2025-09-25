@@ -14,9 +14,8 @@ from datetime import datetime
 class ClientManager:
     """Manages connected clients"""
     
-    def __init__(self, logger):
+    def __init__(self):
         self.clients = {}  # {socket: {'pseudo': str, 'ip': str, 'connected_at': datetime}}
-        self.logger = logger
     
     def add_client(self, client_socket, pseudo, ip):
         """Add a new client to the manager"""
@@ -25,14 +24,14 @@ class ClientManager:
             'ip': ip,
             'connected_at': datetime.now()
         }
-        self.logger.log_and_print(f"{pseudo} ({ip}) connected")
+        print(f"{pseudo} ({ip}) connected")
     
     def remove_client(self, client_socket):
         """Remove a client from the manager"""
         if client_socket in self.clients:
             pseudo = self.clients[client_socket]['pseudo']
             del self.clients[client_socket]
-            self.logger.log_and_print(f"{pseudo} disconnected")
+            print(f"{pseudo} disconnected")
             return pseudo
         return None
     
@@ -67,4 +66,4 @@ class ClientManager:
             if client_socket in self.clients:
                 pseudo = self.clients[client_socket]['pseudo']
                 del self.clients[client_socket]
-                self.logger.log_and_print(f"{pseudo} disconnected (network error)", 'warning')
+                print(f"{pseudo} disconnected (network error)")
