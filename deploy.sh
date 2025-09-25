@@ -43,13 +43,13 @@ apt update -y
 # Install Python3 if necessary
 if ! command -v python3 &> /dev/null; then
     echo "Installing Python3..."
-    apt install -y python3 python3-pip
+    apt install -y python3 python3-pip --break-system-packages
 fi
 
 # Install cryptography library if encryption is enabled
 if [[ $ENABLE_ENCRYPTION =~ ^[Yy]$ ]]; then
     echo "Installing cryptography library for security features..."
-    pip3 install cryptography
+    pip3 install cryptography --break-system-packages
 fi
 
 # Create system user if necessary
