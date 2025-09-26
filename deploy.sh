@@ -24,12 +24,6 @@ INSTALL_DIR=${INSTALL_DIR:-$DEFAULT_DIR}
 read -s -p "Chat password (optional): " PASSWORD
 echo
 
-read -p "Enable encryption? (y/N): " ENABLE_ENCRYPTION
-if [[ $ENABLE_ENCRYPTION =~ ^[Yy]$ ]]; then
-    read -s -p "Encryption password: " ENCRYPTION_PASSWORD
-    echo
-fi
-
 # Check permissions
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root (sudo)"
@@ -43,14 +37,10 @@ apt update -y
 # Install Python3 if necessary
 if ! command -v python3 &> /dev/null; then
     echo "Installing Python3..."
-    apt install -y python3 python3-pip --break-system-packages
+    apt install -y python3 python3-pip
 fi
 
-# Install cryptography library if encryption is enabled
-if [[ $ENABLE_ENCRYPTION =~ ^[Yy]$ ]]; then
-    echo "Installing cryptography library for security features..."
-    pip3 install cryptography --break-system-packages
-fi
+# No cryptography needed - just basic security features
 
 # Create system user if necessary
 if ! id "$USERNAME" &>/dev/null; then
@@ -70,9 +60,7 @@ cp server.py $INSTALL_DIR/
 cp client_manager.py $INSTALL_DIR/
 cp auth_handler.py $INSTALL_DIR/
 cp message_handler.py $INSTALL_DIR/
-if [[ $ENABLE_ENCRYPTION =~ ^[Yy]$ ]]; then
-    cp secure.py $INSTALL_DIR/
-fi
+cp secure.py $INSTALL_DIR/
 chown -R $USERNAME:$USERNAME $INSTALL_DIR/
 chmod +x $INSTALL_DIR/chat_server.py
 
@@ -87,7 +75,7 @@ After=network.target
 Type=simple
 User=$USERNAME
 WorkingDirectory=$INSTALL_DIR
-ExecStart=/usr/bin/python3 $INSTALL_DIR/chat_server.py $PORT${PASSWORD:+ "$PASSWORD"}${ENCRYPTION_PASSWORD:+ "$ENCRYPTION_PASSWORD"}
+ExecStart=/usr/bin/python3 $INSTALL_DIR/chat_server.py $PORT "$PASSWORD"
 Restart=always
 RestartSec=3
 
@@ -122,21 +110,16 @@ fi
 
 # Display final information
 echo ""
-echo "Installation completed!"
-echo "======================"
+echo "SCHRIMP CHAT SERVER DEPLOYED!"
+echo "============================="
 echo "Server: $(hostname -I | awk '{print $1}'):$PORT"
-if [[ $ENABLE_ENCRYPTION =~ ^[Yy]$ ]]; then
-    echo "Connection: Use secure_client.py for encrypted connection"
-    echo "python3 secure_client.py $(hostname -I | awk '{print $1}') $PORT"
-else
-    echo "Connection: nc $(hostname -I | awk '{print $1}') $PORT"
-fi
+echo "Connection: nc $(hostname -I | awk '{print $1}') $PORT"
 if [[ -n "$PASSWORD" ]]; then
     echo "Password: $PASSWORD"
+else
+    echo "No password required"
 fi
-if [[ $ENABLE_ENCRYPTION =~ ^[Yy]$ ]]; then
-    echo "Encryption: ENABLED"
-fi
+echo "Security: Rate limiting and anti-spam enabled"
 echo ""
 echo "Useful commands:"
 echo "  Status:    systemctl status schrimp-chat"

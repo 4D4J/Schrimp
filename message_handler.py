@@ -33,10 +33,9 @@ class MessageHandler:
                 return 'continue'
             
             # Filter content
-            if not security_manager.filter_content(message):
-                warning = "Message blocked by content filter."
-                self._send_to_client(client_socket, warning, security_manager)
-                return 'continue'
+            filtered_message = security_manager.filter_content(message)
+            if filtered_message != message:
+                message = filtered_message  # Use filtered version
             
         # Special commands
         if message.lower() == '/quit':
@@ -54,23 +53,15 @@ class MessageHandler:
         return 'continue'
     
     def _send_to_client(self, client_socket, message, security_manager=None):
-        """Send message to a specific client with optional encryption"""
+        """Send message to a specific client (no encryption)"""
         try:
-            if security_manager:
-                encrypted_data = security_manager.encrypt_message(message)
-                client_socket.send(encrypted_data)
-            else:
-                client_socket.send(message.encode('utf-8'))
+            client_socket.send(message.encode('utf-8'))
         except Exception as e:
             print(f"Error sending message to client: {e}")
     
     def _broadcast_message(self, message, client_manager, exclude_client=None, security_manager=None):
-        """Broadcast message to all clients with optional encryption"""
-        if security_manager:
-            encrypted_data = security_manager.encrypt_message(message)
-            client_manager.broadcast_encrypted_message(encrypted_data, exclude_client=exclude_client)
-        else:
-            client_manager.broadcast_message(message, exclude_client=exclude_client)
+        """Broadcast message to all clients (no encryption)"""
+        client_manager.broadcast_message(message, exclude_client=exclude_client)
     
     def handle_message_loop(self, client_socket, pseudo, client_manager, server_running, security_manager=None):
         """Handle the main message reception loop"""
@@ -80,15 +71,8 @@ class MessageHandler:
                 if not raw_message:
                     break
                 
-                # Decrypt message if security is enabled
-                if security_manager:
-                    try:
-                        message = security_manager.decrypt_message(raw_message)
-                    except Exception as e:
-                        print(f"Decryption error for {pseudo}: {e}")
-                        continue
-                else:
-                    message = raw_message.decode('utf-8')
+                # No decryption - direct message handling
+                message = raw_message.decode('utf-8')
                     
                 action = self.process_message(message, pseudo, client_socket, client_manager, security_manager)
                 if action == 'disconnect':

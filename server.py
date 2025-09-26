@@ -7,6 +7,14 @@ Core server implementation that orchestrates all components
 import socket
 import threading
 from client_manager import ClientManager
+
+# Try to import security components (anti-spam, rate limiting, etc.)
+try:
+    from secure import SecurityManager
+    SECURITY_AVAILABLE = True
+except ImportError:
+    SECURITY_AVAILABLE = False
+    print("⚠️  Security features not available (missing secure.py)")
 from auth_handler import AuthHandler
 from message_handler import MessageHandler
 
@@ -27,7 +35,7 @@ except ImportError:
 class ChatServer:
     """Main chat server class that coordinates all components"""
     
-    def __init__(self, host='0.0.0.0', port=8888, password=None, encryption_password=None, enable_encryption=True):
+    def __init__(self, host='0.0.0.0', port=8888, password=None):
         self.host = host
         self.port = port
         self.server_socket = None
@@ -38,15 +46,11 @@ class ChatServer:
         self.auth_handler = AuthHandler(password)
         self.message_handler = MessageHandler()
         
-        # Initialize security if available
+        # Initialize security (rate limiting, anti-spam) - NO encryption
         if SECURITY_AVAILABLE:
-            self.security = SecurityManager(encryption_password, enable_encryption)
-            self.client_tokens = {}  # {socket: token} for tracking clients
-            self.security_enabled = True
+            self.security_manager = SecurityManager(enable_security=True)
         else:
-            self.security = None
-            self.client_tokens = {}
-            self.security_enabled = False
+            self.security_manager = None
 
     # --------------------------------------------------------------------------
     # SERVER MANAGEMENT
@@ -63,9 +67,9 @@ class ChatServer:
             
             print(f"Chat server started on {self.host}:{self.port}")
             if self.security_manager:
-                print("Security: ENABLED")
+                print("Security: Rate limiting and anti-spam ENABLED")
             else:
-                print("Security: DISABLED (cryptography library not installed)")
+                print("Security: DISABLED")
             if self.auth_handler.password:
                 print(f"Password required: {self.auth_handler.password}")
             else:
@@ -144,8 +148,7 @@ class ChatServer:
                     client_socket, 
                     pseudo, 
                     self.client_manager, 
-                    lambda: self.running,
-                    self.security_manager
+                    lambda: self.running
                 )
                         
         except Exception as e:
