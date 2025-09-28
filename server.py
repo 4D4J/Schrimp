@@ -14,7 +14,7 @@ try:
     SECURITY_AVAILABLE = True
 except ImportError:
     SECURITY_AVAILABLE = False
-    print("⚠️  Security features not available (missing secure.py)")
+    print("Security features not available")
 from auth_handler import AuthHandler
 from message_handler import MessageHandler
 
@@ -28,14 +28,15 @@ except ImportError:
     print("   Install with: pip install cryptography")
 
 
-# ==============================================================================
+# ========================================================
+# ======================
 # MAIN CHAT SERVER  
 # ==============================================================================
 
 class ChatServer:
     """Main chat server class that coordinates all components"""
     
-    def __init__(self, host='0.0.0.0', port=8888, password=None):
+    def __init__(self, host='0.0.0.0', port=3031, password=None):
         self.host = host
         self.port = port
         self.server_socket = None
